@@ -1,7 +1,15 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # セッション（Google OAuthコールバック・ログアウト）
-  get    "/api/v1/auth/google/callback", to: "api/v1/sessions#create"
-  delete "/api/v1/sessions",             to: "api/v1/sessions#destroy"
+  namespace :api do
+    namespace :v1 do
+      # セッション
+      get    "/auth/google/callback", to: "sessions#create"
+      delete "/sessions",             to: "sessions#destroy"
+
+      namespace :me do
+        resource :profile, only: [ :show, :update, :destroy ]
+      end
+    end
+  end
 end
