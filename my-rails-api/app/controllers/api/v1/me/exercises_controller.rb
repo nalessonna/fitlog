@@ -1,13 +1,14 @@
 class Api::V1::Me::ExercisesController < ApplicationController
-  before_action :set_exercise, only: [ :update, :destroy ]
+  before_action :set_body_part, only: [ :index, :create ]
+  before_action :set_exercise,  only: [ :update, :destroy, :one_rm_history, :volume ]
 
   def index
-    exercises = current_user.exercises.includes(:body_part).order(:name)
+    exercises = @body_part.exercises.order(:name)
     render json: exercises.map { |e| exercise_json(e) }
   end
 
   def create
-    exercise = current_user.exercises.build(exercise_params)
+    exercise = @body_part.exercises.build(exercise_params.merge(user: current_user))
     if exercise.save
       render json: exercise_json(exercise), status: :created
     else
@@ -28,7 +29,23 @@ class Api::V1::Me::ExercisesController < ApplicationController
     head :no_content
   end
 
+  def one_rm_history
+    # TODO: OneRmHistoryServiceで実装
+    render json: []
+  end
+
+  def volume
+    # TODO: VolumeServiceで実装
+    render json: []
+  end
+
   private
+
+  def set_body_part
+    @body_part = current_user.body_parts.find_by!(id: params[:body_part_id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Not found" }, status: :not_found
+  end
 
   def set_exercise
     @exercise = current_user.exercises.find_by!(id: params[:id])
