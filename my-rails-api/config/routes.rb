@@ -8,8 +8,9 @@ Rails.application.routes.draw do
       delete "/sessions",             to: "sessions#destroy"
 
       namespace :me do
-        resource  :profile,   only: [ :show, :update, :destroy ]
-        resources :exercises, only: [ :index, :create, :update, :destroy ] do
+        resource  :profile,    only: [ :show, :update, :destroy ]
+        resources :body_parts, only: [ :index, :create, :destroy ]
+        resources :exercises,  only: [ :index, :create, :update, :destroy ] do
           member do
             get :one_rm_history
           end
