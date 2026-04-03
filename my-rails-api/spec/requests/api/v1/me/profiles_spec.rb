@@ -40,7 +40,7 @@ RSpec.describe "Api::V1::Me::Profiles", type: :request do
       it "nameが空の場合は422を返すこと" do
         patch "/api/v1/me/profile", params: { user: { name: "" } }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 

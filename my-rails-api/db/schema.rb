@@ -14,6 +14,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_124239) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
+  create_table "body_parts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "name"], name: "index_body_parts_on_user_id_and_name", unique: true
+    t.index ["user_id"], name: "index_body_parts_on_user_id"
+  end
+
   create_table "exercises", force: :cascade do |t|
     t.string "body_part", null: false
     t.datetime "created_at", null: false
@@ -63,6 +72,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_124239) do
     t.index ["workout_log_id"], name: "index_workout_sets_on_workout_log_id"
   end
 
+  add_foreign_key "body_parts", "users"
   add_foreign_key "exercises", "users"
   add_foreign_key "friendships", "users", column: "receiver_id"
   add_foreign_key "friendships", "users", column: "requester_id"

@@ -14,9 +14,10 @@ RSpec.describe Exercise, type: :model do
     end
 
     it "body_partがなければ無効であること" do
-      exercise = build(:exercise, body_part: nil)
+      exercise = build(:exercise)
+      exercise.body_part = nil
       expect(exercise).not_to be_valid
-      expect(exercise.errors[:body_part]).to include("can't be blank")
+      expect(exercise.errors[:body_part]).to include("must exist")
     end
 
     it "同じユーザーで同じnameは無効であること" do
