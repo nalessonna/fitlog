@@ -22,8 +22,8 @@ Rails.application.routes.draw do
             get :one_rm_history
             get :volume
           end
-          resources :workout_logs, param: :date, only: [ :show, :update, :destroy ]
         end
+        resources :workout_logs, param: :date, only: [ :show, :update, :destroy ]
         resources :friendships, only: [ :create, :update, :destroy ] do
           collection do
             get :friends
@@ -31,6 +31,23 @@ Rails.application.routes.draw do
           end
         end
       end
+
+      scope '/friends/:account_id', module: 'friends', as: 'friend' do
+        get :calendar, to: 'friends#calendar'
+        get :volume,   to: 'friends#volume'
+        resources :body_parts, only: [ :index ] do
+          member { get :volume }
+          resources :exercises, only: [ :index ]
+        end
+        resources :exercises, only: [] do
+          member do
+            get :volume
+            get :one_rm_history
+          end
+        end
+        resources :workout_logs, only: [ :index ]
+      end
+
     end
   end
 end

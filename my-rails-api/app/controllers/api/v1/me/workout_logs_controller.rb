@@ -32,9 +32,10 @@ class Api::V1::Me::WorkoutLogsController < ApplicationController
   private
 
   def set_exercise
-    @exercise = current_user.exercises.find_by!(id: params[:exercise_id])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "Not found" }, status: :not_found
+    @exercise = current_user.exercises.find_by(id: params[:exercise_id])
+    if @exercise.nil?
+      render json: { error: "Not found" }, status: :not_found
+    end
   end
 
   def set_log
