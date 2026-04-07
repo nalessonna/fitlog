@@ -9,18 +9,10 @@ class Api::V1::Users::BaseController < ApplicationController
 
     if target.id == current_user.id
       @target_user = current_user
-    elsif friends?(current_user, target)
+    elsif current_user.friends_with?(target)
       @target_user = target
     else
       render json: { error: "Forbidden" }, status: :forbidden
     end
-  end
-
-  def friends?(user_a, user_b)
-    Friendship.where(status: "accepted")
-      .where(
-        "(requester_id = ? AND receiver_id = ?) OR (requester_id = ? AND receiver_id = ?)",
-        user_a.id, user_b.id, user_b.id, user_a.id
-      ).exists?
   end
 end

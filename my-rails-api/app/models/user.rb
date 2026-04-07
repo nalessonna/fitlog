@@ -15,4 +15,18 @@ class User < ApplicationRecord
     id = Hashids.new(ENV.fetch("SECRET_KEY_BASE")[0..15]).decode(account_id).first
     find_by(id: id)
   end
+
+  def friend_users
+    friend_ids = sent_friendships.where(status: "accepted").pluck(:receiver_id) +
+                 received_friendships.where(status: "accepted").pluck(:requester_id)
+    User.where(id: friend_ids)
+  end
+
+  def friends_with?(other_user)
+    Friendship.where(status: "accepted")
+      .where(
+        "(requester_id = ? AND receiver_id = ?) OR (requester_id = ? AND receiver_id = ?)",
+        id, other_user.id, other_user.id, id
+      ).exists?
+  end
 end

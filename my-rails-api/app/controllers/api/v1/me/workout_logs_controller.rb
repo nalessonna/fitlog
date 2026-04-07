@@ -1,6 +1,6 @@
 class Api::V1::Me::WorkoutLogsController < ApplicationController
   before_action :set_exercise
-  before_action :set_log
+  before_action :set_log, only: [ :destroy ]
 
   def update
     if params[:sets].empty?
@@ -8,15 +8,8 @@ class Api::V1::Me::WorkoutLogsController < ApplicationController
       return
     end
 
-    @log.workout_sets.destroy_all
-    params[:sets].each do |set|
-      @log.workout_sets.create!(
-        set_number: set[:set_number],
-        weight:     set[:weight],
-        reps:       set[:reps]
-      )
-    end
-    render json: workout_log_json(@log.reload)
+    log = SaveWorkoutSetsService.call(exercise: @exercise, date: params[:date], sets_params: params[:sets])
+    render json: workout_log_json(log)
   end
 
   def destroy
@@ -32,12 +25,11 @@ class Api::V1::Me::WorkoutLogsController < ApplicationController
   end
 
   def set_log
-    @log = @exercise.workout_logs.find_or_create_by!(date: params[:date])
+    @log = @exercise.workout_logs.find_by(date: params[:date])
+    render json: { error: "Not found" }, status: :not_found if @log.nil?
   end
 
   def workout_log_json(log)
-    return { date: params[:date], sets: [] } if log.nil?
-
     {
       date: log.date,
       sets: log.workout_sets.order(:set_number).map { |s|

@@ -1,42 +1,23 @@
 class Api::V1::Users::ExercisesController < Api::V1::Users::BaseController
   include PeriodFilterable
 
-  before_action :set_body_part,  only: [ :index ]
-  before_action :set_exercise,   only: [ :volume, :one_rm_history ]
+  before_action :set_body_part, only: [ :index ]
+  before_action :set_exercise,  only: [ :volume, :one_rm_history ]
 
   def index
-    exercises = @body_part.exercises.order(:name)
-    render json: exercises.map { |e| exercise_json(e) }
+    render json: @body_part.exercises.order(:name).map { |e| exercise_json(e) }
   end
 
   def volume
-    sets = filter_by_period(
-      WorkoutSet.joins(:workout_log).where(workout_logs: { exercise_id: @exercise.id }),
-      column: "workout_logs.date"
-    )
-
-    result = sets
-      .group("workout_logs.date")
-      .sum("workout_sets.weight * workout_sets.reps")
-      .map { |date, vol| { date: date.to_s, volume: vol.to_f } }
-      .sort_by { |e| e[:date] }
-
-    render json: result
+    base_scope = WorkoutSet.joins(:workout_log).where(workout_logs: { exercise_id: @exercise.id })
+    filtered   = filter_by_period(base_scope, column: "workout_logs.date")
+    render json: WorkoutSet.volume_by_date(filtered)
   end
 
   def one_rm_history
-    sets = filter_by_period(
-      WorkoutSet.joins(:workout_log).where(workout_logs: { exercise_id: @exercise.id }),
-      column: "workout_logs.date"
-    )
-
-    result = sets
-      .group("workout_logs.date")
-      .maximum("workout_sets.weight * (1 + workout_sets.reps * 1.0 / 30.0)")
-      .map { |date, one_rm| { date: date.to_s, one_rm: one_rm.to_f } }
-      .sort_by { |e| e[:date] }
-
-    render json: result
+    base_scope = WorkoutSet.joins(:workout_log).where(workout_logs: { exercise_id: @exercise.id })
+    filtered   = filter_by_period(base_scope, column: "workout_logs.date")
+    render json: WorkoutSet.one_rm_by_date(filtered)
   end
 
   private

@@ -2,15 +2,7 @@ class Api::V1::Me::FriendshipsController < ApplicationController
   before_action :set_friendship, only: [ :update, :destroy ]
 
   def friends
-    friend_ids = Friendship.where(status: "accepted")
-      .where("requester_id = ? OR receiver_id = ?", current_user.id, current_user.id)
-      .pluck(:requester_id, :receiver_id)
-      .flatten
-      .uniq
-      .reject { |id| id == current_user.id }
-
-    users = User.where(id: friend_ids)
-    render json: users.map { |u| user_json(u) }
+    render json: current_user.friend_users.map { |u| user_json(u) }
   end
 
   def requests
@@ -52,9 +44,7 @@ class Api::V1::Me::FriendshipsController < ApplicationController
       @friendship = current_user.sent_friendships.find_by(id: params[:id])
     end
 
-    if @friendship.nil?
-      render json: { error: "Not found" }, status: :not_found
-    end
+    render json: { error: "Not found" }, status: :not_found if @friendship.nil?
   end
 
   def user_json(user)
