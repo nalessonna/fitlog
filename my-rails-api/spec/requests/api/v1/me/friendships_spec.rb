@@ -47,6 +47,29 @@ RSpec.describe "Api::V1::Me::Friendships", type: :request do
       end
     end
 
+    describe "GET /api/v1/me/friendships/sent_requests" do
+      it "自分が送った申請一覧を返すこと" do
+        another = create(:user)
+        create(:friendship, requester: user,    receiver: other,    status: "pending")
+        create(:friendship, requester: another, receiver: user,     status: "pending") # 受け取った申請は含まない
+
+        get "/api/v1/me/friendships/sent_requests"
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body.length).to eq(1)
+        expect(response.parsed_body.first["receiver_id"]).to eq(other.id)
+      end
+
+      it "承認済みのフレンドは含まないこと" do
+        create(:friendship, requester: user, receiver: other, status: "accepted")
+
+        get "/api/v1/me/friendships/sent_requests"
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body).to be_empty
+      end
+    end
+
     describe "GET /api/v1/me/friendships/requests" do
       it "受け取った申請一覧を返すこと" do
         create(:friendship, requester: other, receiver: user, status: "pending")
@@ -118,6 +141,16 @@ RSpec.describe "Api::V1::Me::Friendships", type: :request do
     describe "DELETE /api/v1/me/friendships/:id" do
       it "フレンドを削除できること" do
         friendship = create(:friendship, requester: user, receiver: other, status: "accepted")
+
+        expect {
+          delete "/api/v1/me/friendships/#{friendship.id}"
+        }.to change(Friendship, :count).by(-1)
+
+        expect(response).to have_http_status(:no_content)
+      end
+
+      it "自分が送った申請をキャンセルできること" do
+        friendship = create(:friendship, requester: user, receiver: other, status: "pending")
 
         expect {
           delete "/api/v1/me/friendships/#{friendship.id}"

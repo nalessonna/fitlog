@@ -21,7 +21,7 @@ class Api::V1::SessionsController < ApplicationController
       path:      "/"
     )
 
-    redirect_to "#{ENV.fetch("FRONTEND_URL", "http://localhost:3000")}/workout",
+    redirect_to "#{ENV.fetch("FRONTEND_URL", "http://localhost:3000")}/dashboard",
       allow_other_host: true
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.message }, status: :unprocessable_entity

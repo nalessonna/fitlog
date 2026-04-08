@@ -3,25 +3,25 @@ require "rails_helper"
 RSpec.describe "Api::V1::Sessions", type: :request do
   describe "GET /api/v1/auth/google/callback" do
     context "新規ユーザーの場合" do
-      it "ユーザーを作成してCookieをセットし/workoutにリダイレクトすること" do
+      it "ユーザーを作成してCookieをセットし/dashboardにリダイレクトすること" do
         expect {
           get "/api/v1/auth/google/callback"
         }.to change(User, :count).by(1)
 
-        expect(response).to redirect_to("#{ENV.fetch("FRONTEND_URL", "http://localhost:3000")}/workout")
+        expect(response).to redirect_to("#{ENV.fetch("FRONTEND_URL", "http://localhost:3000")}/dashboard")
         expect(response.cookies["auth_token"]).to be_present
       end
     end
 
     context "既存ユーザーの場合" do
-      it "新規ユーザーを作成せずCookieをセットし/workoutにリダイレクトすること" do
+      it "新規ユーザーを作成せずCookieをセットし/dashboardにリダイレクトすること" do
         create(:user, google_uid: "123456789")
 
         expect {
           get "/api/v1/auth/google/callback"
         }.not_to change(User, :count)
 
-        expect(response).to redirect_to("#{ENV.fetch("FRONTEND_URL", "http://localhost:3000")}/workout")
+        expect(response).to redirect_to("#{ENV.fetch("FRONTEND_URL", "http://localhost:3000")}/dashboard")
         expect(response.cookies["auth_token"]).to be_present
       end
     end

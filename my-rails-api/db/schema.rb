@@ -24,11 +24,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_124239) do
   end
 
   create_table "exercises", force: :cascade do |t|
-    t.string "body_part", null: false
+    t.bigint "body_part_id", null: false
     t.datetime "created_at", null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["body_part_id"], name: "index_exercises_on_body_part_id"
     t.index ["user_id", "name"], name: "index_exercises_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_exercises_on_user_id"
   end
@@ -73,6 +74,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_124239) do
   end
 
   add_foreign_key "body_parts", "users"
+  add_foreign_key "exercises", "body_parts"
   add_foreign_key "exercises", "users"
   add_foreign_key "friendships", "users", column: "receiver_id"
   add_foreign_key "friendships", "users", column: "requester_id"

@@ -10,6 +10,11 @@ class Api::V1::Me::FriendshipsController < ApplicationController
     render json: friendships.map { |f| request_json(f) }
   end
 
+  def sent_requests
+    friendships = current_user.sent_friendships.where(status: "pending").includes(:receiver)
+    render json: friendships.map { |f| sent_request_json(f) }
+  end
+
   def create
     receiver = User.find_by_account_id(params[:account_id])
     return render json: { error: "Not found" }, status: :not_found if receiver.nil?
@@ -53,6 +58,10 @@ class Api::V1::Me::FriendshipsController < ApplicationController
 
   def request_json(friendship)
     { id: friendship.id, requester_id: friendship.requester_id, name: friendship.requester.name }
+  end
+
+  def sent_request_json(friendship)
+    { id: friendship.id, receiver_id: friendship.receiver_id, name: friendship.receiver.name }
   end
 
   def friendship_json(friendship)

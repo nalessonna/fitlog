@@ -35,6 +35,7 @@ Rails.application.routes.draw do
           collection do
             get :friends
             get :requests
+            get :sent_requests
           end
         end
       end
