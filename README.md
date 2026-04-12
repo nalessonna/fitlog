@@ -25,7 +25,8 @@
 | バックエンド | Ruby on Rails 8.1 (API モード) |
 | データベース | PostgreSQL 16 |
 | 認証 | Google OAuth 2.0 (OmniAuth) / JWT |
-| インフラ | Docker / Docker Compose |
+| インフラ | Docker / AWS ECS Fargate / ECR / RDS / ALB / CloudFront |
+| CI/CD | GitHub Actions |
 
 ## ディレクトリ構成
 
@@ -99,5 +100,63 @@ users ←→ users (friendships: フレンド関係)
 
 1. [Google Cloud Console](https://console.cloud.google.com/) でプロジェクトを作成
 2. 「APIとサービス」→「認証情報」→「OAuth 2.0 クライアント ID」を作成
-3. 承認済みリダイレクト URI に `http://localhost:3001/api/v1/auth/google/callback` を追加
+3. 承認済みリダイレクト URI に以下を追加：
+   - ローカル: `http://localhost:3001/api/v1/auth/google/callback`
+   - 本番: `https://d3e9xoft44wqjy.cloudfront.net/api/v1/auth/google/callback`
 4. 取得した Client ID / Secret を `.env` に設定
+
+## 本番インフラ構成（AWS）
+
+```
+ブラウザ
+  ↓ HTTPS
+CloudFront (d3e9xoft44wqjy.cloudfront.net)
+  ↓ HTTP（VPC内部通信）
+ALB (Application Load Balancer)
+  ├── /api/* → Rails API (ECS Fargate)
+  └── /*     → Next.js  (ECS Fargate)
+                    ↓
+              PostgreSQL (RDS)
+```
+
+### HTTPS対応
+
+カスタムドメインを持たないため、CloudFrontのデフォルトドメイン（`*.cloudfront.net`）でHTTPSを実現。CloudFrontがSSL証明書を管理し、ブラウザ〜CloudFront間はHTTPS、CloudFront〜ALB間はVPC内部のHTTP通信。
+
+### Google OAuth対応
+
+Rails側で `config.assume_ssl = true` を設定し `X-Forwarded-Proto` ヘッダーを信頼することで、コールバックURLを `https://` で生成。Google OAuthの本番環境要件に対応。
+
+### ALBパスベースルーティング
+
+| 条件 | 転送先 |
+|------|--------|
+| `/api/*` | Rails ターゲットグループ |
+| `/*` | Next.js ターゲットグループ |
+
+### CI/CD（GitHub Actions）
+
+`main` ブランチへのプッシュで自動デプロイ。Rails → Next.js の順にビルド・ECRプッシュ・ECSデプロイを実行。
+
+必要なGitHub Secrets:
+
+| 変数名 | 説明 |
+|--------|------|
+| `AWS_ACCESS_KEY_ID` | AWSアクセスキー |
+| `AWS_SECRET_ACCESS_KEY` | AWSシークレットキー |
+| `AWS_REGION` | AWSリージョン |
+| `RAILS_ECR_REPOSITORY` | Rails用ECRリポジトリ名 |
+| `NEXT_ECR_REPOSITORY` | Next.js用ECRリポジトリ名 |
+| `ECS_CLUSTER` | ECSクラスター名 |
+| `ECS_RAILS_TASK_DEFINITION` | RailsタスクDefinition名 |
+| `ECS_NEXT_TASK_DEFINITION` | Next.jsタスクDefinition名 |
+| `ECS_RAILS_SERVICE_ARN` | RailsサービスARN |
+| `ECS_NEXT_SERVICE_ARN` | Next.jsサービスARN |
+| `RAILS_CONTAINER_NAME` | Railsコンテナ名 |
+| `NEXT_CONTAINER_NAME` | Next.jsコンテナ名 |
+| `DATABASE_URL` | RDS接続URL |
+| `SECRET_KEY_BASE` | Rails秘密鍵 |
+| `GOOGLE_CLIENT_ID` | Google OAuthクライアントID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuthクライアントシークレット |
+| `FRONTEND_URL` | Next.jsのURL（CORS設定用） |
+| `NEXT_PUBLIC_RAILS_API_URL` | RailsのURL（Next.jsビルド時埋め込み） |
