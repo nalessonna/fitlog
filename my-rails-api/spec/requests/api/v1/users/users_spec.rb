@@ -28,6 +28,7 @@ RSpec.describe "Api::V1::Users", type: :request do
 
       it "指定月のトレーニング日と種目名を返すこと" do
         log = create(:workout_log, exercise: exercise, date: "2026-04-10")
+        create(:workout_set, workout_log: log, weight: 80.0, reps: 10, set_number: 1)
         create(:workout_log, exercise: exercise, date: "2026-03-10") # 別月
         create(:workout_log, date: "2026-04-10")                     # 他ユーザー
 
@@ -38,6 +39,7 @@ RSpec.describe "Api::V1::Users", type: :request do
         expect(body.length).to eq(1)
         expect(body.first["date"]).to eq("2026-04-10")
         expect(body.first["exercise_names"]).to include(exercise.name)
+        expect(body.first["exercises"].first["sets"].first["weight"]).to eq(80.0)
       end
 
       context "フレンドのカレンダーを見る場合" do
@@ -86,6 +88,45 @@ RSpec.describe "Api::V1::Users", type: :request do
         create(:workout_set, workout_log: recent_log, weight: 80.0, reps: 10)
 
         get "/api/v1/users/#{user.account_id}/volume", params: { period: "month" }
+
+        dates = response.parsed_body.map { |e| e["date"] }
+        expect(dates).to include(Date.today.to_s)
+        expect(dates).not_to include(old_log.date.to_s)
+      end
+
+      it "period=3monthsで過去3ヶ月のデータのみ返すこと" do
+        old_log = create(:workout_log, exercise: exercise, date: 4.months.ago.to_date)
+        create(:workout_set, workout_log: old_log, weight: 100.0, reps: 5)
+        recent_log = create(:workout_log, exercise: exercise, date: Date.today)
+        create(:workout_set, workout_log: recent_log, weight: 80.0, reps: 10)
+
+        get "/api/v1/users/#{user.account_id}/volume", params: { period: "3months" }
+
+        dates = response.parsed_body.map { |e| e["date"] }
+        expect(dates).to include(Date.today.to_s)
+        expect(dates).not_to include(old_log.date.to_s)
+      end
+
+      it "period=6monthsで過去6ヶ月のデータのみ返すこと" do
+        old_log = create(:workout_log, exercise: exercise, date: 7.months.ago.to_date)
+        create(:workout_set, workout_log: old_log, weight: 100.0, reps: 5)
+        recent_log = create(:workout_log, exercise: exercise, date: Date.today)
+        create(:workout_set, workout_log: recent_log, weight: 80.0, reps: 10)
+
+        get "/api/v1/users/#{user.account_id}/volume", params: { period: "6months" }
+
+        dates = response.parsed_body.map { |e| e["date"] }
+        expect(dates).to include(Date.today.to_s)
+        expect(dates).not_to include(old_log.date.to_s)
+      end
+
+      it "period=yearで過去1年のデータのみ返すこと" do
+        old_log = create(:workout_log, exercise: exercise, date: 13.months.ago.to_date)
+        create(:workout_set, workout_log: old_log, weight: 100.0, reps: 5)
+        recent_log = create(:workout_log, exercise: exercise, date: Date.today)
+        create(:workout_set, workout_log: recent_log, weight: 80.0, reps: 10)
+
+        get "/api/v1/users/#{user.account_id}/volume", params: { period: "year" }
 
         dates = response.parsed_body.map { |e| e["date"] }
         expect(dates).to include(Date.today.to_s)

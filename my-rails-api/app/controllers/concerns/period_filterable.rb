@@ -1,15 +1,11 @@
 module PeriodFilterable
   extend ActiveSupport::Concern
 
-  def filter_by_period(scope, column: "date")
+  def filter_by_period(scope, column:)
     today = Date.today
-    col   = if column.include?(".")
-      table_name, col_name = column.split(".", 2)
-      Arel::Table.new(table_name)[col_name]
-    else
-      scope.klass.arel_table[column]
-    end
-    base  = scope.where(col.lteq(today))
+    table_name, col_name = column.split(".", 2)
+    col  = Arel::Table.new(table_name)[col_name]
+    base = scope.where(col.lteq(today))
 
     case params[:period]
     when "month"   then base.where(col.gteq(1.month.ago.to_date))
