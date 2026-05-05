@@ -8,9 +8,9 @@ Rails.application.routes.draw do
       delete "/sessions",             to: "sessions#destroy"
 
       # 読み取り共用: 自分 / フレンド どちらも account_id で統一
-      scope '/users/:account_id', module: 'users', as: 'user' do
-        get :calendar, to: 'users#calendar'
-        get :volume,   to: 'users#volume'
+      scope "/users/:account_id", module: "users", as: "user" do
+        get :calendar, to: "users#calendar"
+        get :volume,   to: "users#volume"
         resources :body_parts, only: [ :index ] do
           member { get :volume }
           resources :exercises, only: [ :index ]
@@ -39,7 +39,6 @@ Rails.application.routes.draw do
           end
         end
       end
-
     end
   end
 end

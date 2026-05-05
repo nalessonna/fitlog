@@ -19,8 +19,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_124239) do
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.index ["user_id", "name"], name: "index_body_parts_on_user_id_and_name", unique: true
-    t.index ["user_id"], name: "index_body_parts_on_user_id"
+    t.index [ "user_id", "name" ], name: "index_body_parts_on_user_id_and_name", unique: true
+    t.index [ "user_id" ], name: "index_body_parts_on_user_id"
   end
 
   create_table "exercises", force: :cascade do |t|
@@ -29,9 +29,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_124239) do
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.index ["body_part_id"], name: "index_exercises_on_body_part_id"
-    t.index ["user_id", "name"], name: "index_exercises_on_user_id_and_name", unique: true
-    t.index ["user_id"], name: "index_exercises_on_user_id"
+    t.index [ "body_part_id" ], name: "index_exercises_on_body_part_id"
+    t.index [ "user_id", "name" ], name: "index_exercises_on_user_id_and_name", unique: true
+    t.index [ "user_id" ], name: "index_exercises_on_user_id"
   end
 
   create_table "friendships", force: :cascade do |t|
@@ -40,9 +40,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_124239) do
     t.bigint "requester_id", null: false
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
-    t.index ["receiver_id"], name: "index_friendships_on_receiver_id"
-    t.index ["requester_id", "receiver_id"], name: "index_friendships_on_requester_id_and_receiver_id", unique: true
-    t.index ["requester_id"], name: "index_friendships_on_requester_id"
+    t.index [ "receiver_id" ], name: "index_friendships_on_receiver_id"
+    t.index [ "requester_id", "receiver_id" ], name: "index_friendships_on_requester_id_and_receiver_id", unique: true
+    t.index [ "requester_id" ], name: "index_friendships_on_requester_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -51,7 +51,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_124239) do
     t.string "google_uid", null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
-    t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
+    t.index [ "google_uid" ], name: "index_users_on_google_uid", unique: true
   end
 
   create_table "workout_logs", force: :cascade do |t|
@@ -59,8 +59,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_124239) do
     t.date "date", null: false
     t.bigint "exercise_id", null: false
     t.datetime "updated_at", null: false
-    t.index ["exercise_id", "date"], name: "index_workout_logs_on_exercise_id_and_date", unique: true
-    t.index ["exercise_id"], name: "index_workout_logs_on_exercise_id"
+    t.index [ "exercise_id", "date" ], name: "index_workout_logs_on_exercise_id_and_date", unique: true
+    t.index [ "exercise_id" ], name: "index_workout_logs_on_exercise_id"
   end
 
   create_table "workout_sets", force: :cascade do |t|
@@ -70,7 +70,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_124239) do
     t.datetime "updated_at", null: false
     t.decimal "weight", precision: 5, scale: 1, null: false
     t.bigint "workout_log_id", null: false
-    t.index ["workout_log_id"], name: "index_workout_sets_on_workout_log_id"
+    t.index [ "workout_log_id" ], name: "index_workout_sets_on_workout_log_id"
   end
 
   add_foreign_key "body_parts", "users"
