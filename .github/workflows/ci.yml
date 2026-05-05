@@ -71,6 +71,7 @@ jobs:
     env:
       RAILS_ENV: test
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/fitlog_test
+      SECRET_KEY_BASE: dummy_secret_key_base_for_ci_testing_only
 
     steps:
       - name: Checkout code
