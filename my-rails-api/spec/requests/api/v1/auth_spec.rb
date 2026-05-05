@@ -13,6 +13,16 @@ RSpec.describe "Api::V1::Sessions", type: :request do
       end
     end
 
+    context "ユーザー保存に失敗した場合" do
+      it "422を返すこと" do
+        allow_any_instance_of(User).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new(User.new))
+
+        get "/api/v1/auth/google/callback"
+
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+
     context "既存ユーザーの場合" do
       it "新規ユーザーを作成せずCookieをセットし/dashboardにリダイレクトすること" do
         create(:user, google_uid: "123456789")
