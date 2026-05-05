@@ -1,5 +1,7 @@
 # FitLog
 
+[![codecov](https://codecov.io/gh/nalessonna/fitlog/graph/badge.svg?token=CODECOV_TOKEN)](https://codecov.io/gh/nalessonna/fitlog)
+
 トレーニングを記録して、成長を可視化するWebアプリケーションです。
 
 ## 機能

@@ -98,3 +98,9 @@ jobs:
           name: coverage-report
           path: my-rails-api/coverage/
 
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          working-directory: my-rails-api
+
